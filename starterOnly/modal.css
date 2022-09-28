@@ -536,6 +536,13 @@ footer {
   font-size: 17px;
 }
 
+.errorMsg {
+  display: flex;
+  justify-content: center;
+  color: red;
+  font-size: 17px;
+}
+
 /*ajouté en js si le champs est invalide*/
 .input-error {
   border-color: red;

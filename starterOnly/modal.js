@@ -7,7 +7,7 @@ function editNav() {
     x.className = "topnav";
   }
 }
-//import { checkMail } from "./utils/function.js";
+//import { checkMail } from "./utils/mail.mjs";
 // DOM Elements
 const modalclose = document.querySelector(".close");
 const modalbg = document.querySelector("#modal-1");
@@ -26,9 +26,6 @@ modalBtn.forEach((btn) => btn.addEventListener("click", launchModal));
 function launchModal() {
   modalbg.style.display = "block";
 }
-/*const ancestor = document.querySelector(".content").closest(".bground");
-ancestor.addEventListener("click", closeModal);
-console.log(ancestor);*/
 //close modal event
 modalclose.addEventListener("click", closeModal);
 
@@ -39,20 +36,16 @@ function closeModal() {
 
 function checkMail(unMail) {
   const regEx = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  if (unMail && regEx) {
-    if (!regEx.test(unMail)) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  else {
+  //return !regEx.test(unMail) ? false : true;
+  if (!regEx.test(unMail)) {
     return false;
+  } else {
+    return true;
   }
 }
 
 //fonction pour controler le champ de formulaire
-function checkChamp(unChamp) {
+/*function checkChamp(unChamp) {
   switch (unChamp.type) {
     case 'checkbox':
       if (unChamp.checked) {
@@ -85,26 +78,39 @@ function checkChamp(unChamp) {
         return false;
       }
   }
-}
+}*/
 //fonction pour verifier le formulaire
-const Test = [
-  { first: "Renseignez un prénom" },
-  { last: "Renseignez un nom de famille" },
-  { email: "Renseignez une adresse correcte" },
-  { birthdate: "Renseignez une date" },
-  { quantity: "Renseignez une quantité" },
-  { location: "Veuillez sélectionner un tournoi" },
-  { checkbox1: "Veuillez accepter les conditions d'utilisation" }
-]
-function genererErrorMsg(unMsgError, unControle) {
+const Test = {
+  first: "Renseignez un prénom correct",
+  last: "Renseignez un nom de famille correct",
+  email: "Renseignez une adresse correcte",
+  birthdate: "Renseignez une date",
+  quantity: "Renseignez une quantité",
+  location: "Veuillez sélectionner un tournoi",
+  checkbox1: "Veuillez accepter les conditions d'utilisation"
+}
+//console.log(Test);
+function genererErrorMsg(key) {
   const localError = document.createElement("p");
-  localError.innerText = unMsgError;
-  localError.ariaLabel = "error-" + unControle.name;
-  unControle.parentElement.appendChild(localError);
+  unControle = document.getElementsByName(`${key}`);
+  localError.innerText = Test[key];
+  localError.classList.add("errorMsg");
+  console.log(key);
+  unControle[0].parentElement.appendChild(localError);
+  //console.log(document.querySelector(".errorMsg").closest("div").contains(document.getElementsByName(`${key}`)[0]));
+}
+function supprErrorMsg() {
+  const formData = document.getElementsByClassName("formData");
+  for (let i = 0; i < formData.length; i++) {
+    if (formData[i].contains(document.querySelector(".errorMsg"))) {
+      const element = document.querySelector(".errorMsg");
+      element.remove();
+    }
+  }
 }
 
 //console.log(submit.parentElement)
-function checkForm() {
+/*function checkForm() {
   let errors = 0;
   for (let i = 0; i < formLength; i++) {
     const controle = form[i];
@@ -126,34 +132,147 @@ function checkForm() {
           break;
         case 'location': msgError = "Veuillez sélectionner un tournoi";
           break;
-        case 'checkbox1': msgError = "Veuillez accepter les conditions d'utilisation";
+        case 'tos': msgError = "Veuillez accepter les conditions d'utilisation";
           break;
       }
 
       controle.style.borderColor = "red";
       genererErrorMsg(msgError, controle);
       /*error.style.display = "flex";*/
-      errors++;
-    } else {
-      //error.style.display = "none";
-      controle.style.borderColor = "green";
-    }
-  }
-  if (errors != 0) {
-    return false;
-  } else {
-    return true;
-  }
+/*errors++;
+} else {
+//error.style.display = "none";
+controle.style.borderColor = "green";
 }
+}
+if (errors != 0) {
+return false;
+} else {
+return true;
+}
+}*/
 
 //Vérification form (message si invalide)
 submit.addEventListener("click", function (event) {
-  const value = checkForm();
-  if (value) {
-    event.preventDefault();
+  event.preventDefault();
+  const formData = getFormData();
+  const Validation = validationForm(formData);
+  //const value = checkForm();
+  //console.log(formData);
+  if (Validation) {
     closeModal();
     modalbg2.style.display = "block";
-  } else {
-    event.preventDefault();
   }
 });
+
+
+const validationForm = (data) => {
+  let errors = 0;
+  for (const key in data) {
+    const input = document.querySelector(`#${key}`);
+    switch (key) {
+      case 'first':
+        if (data[key].length >= 2) {
+          input.style.borderColor = 'green';
+          supprErrorMsg();
+        } else {
+          errors++;
+          input.style.borderColor = 'red';
+          genererErrorMsg(key);
+        }
+
+        break
+      case 'last':
+
+        if (data[key].length >= 2) {
+          input.style.borderColor = 'green';
+          supprErrorMsg();
+        } else {
+          errors++;
+          input.style.borderColor = 'red';
+          genererErrorMsg(key);
+        }
+
+        break
+      case 'email':
+
+        if (!checkMail(data[key])) {
+          //console.log(checkMail(data[key]));
+          errors++;
+          genererErrorMsg(key);
+          input.style.borderColor = 'red';
+
+        } else {
+          input.style.borderColor = 'green';
+          supprErrorMsg();
+        }
+
+        break
+      case 'birthdate':
+
+        if (!data[key]) {
+          errors++;
+          input.style.borderColor = 'red';
+          genererErrorMsg(key);
+        } else {
+          input.style.borderColor = 'green';
+          supprErrorMsg();
+        }
+
+        break
+      case 'quantity':
+
+        if (!data[key]) {
+          errors++;
+          input.style.borderColor = 'red';
+          genererErrorMsg(key);
+        } else {
+          input.style.borderColor = 'green';
+          supprErrorMsg();
+        }
+
+        break
+      case 'location':
+
+        if (data[key] == "on" || data[key] == null) {
+          errors++;
+          genererErrorMsg(key);
+          //input.style.borderColor = 'red';
+        } else {
+          supprErrorMsg();
+          //input.style.borderColor = 'green';
+        }
+
+        break
+      case 'checkbox1':
+        if (data[key] == false) {
+          errors++;
+          genererErrorMsg(key);
+          //input.style.borderColor = 'red';
+        } else {
+          supprErrorMsg();
+          //input.style.borderColor = 'green';
+        }
+
+        break
+
+      default:
+        return 0
+    }
+
+  }
+  return errors != 0 ? false : true;
+}
+function getFormData() {
+  return {
+    first: document.querySelector('#first').value,
+    last: document.querySelector('#last').value,
+    email: document.querySelector('#email').value,
+    birthdate: document.querySelector('#birthdate').value,
+    quantity: document.querySelector('#quantity').value,
+    location: document.querySelector('.checkbox-input:checked')
+      ? document.querySelector('.checkbox-input:checked').value
+      : null,
+    checkbox1: document.querySelector('#checkbox1').checked
+  }
+}
