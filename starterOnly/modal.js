@@ -1,4 +1,6 @@
+/**@format */
 
+//import { emailValidation } from "./utils/mail.mjs";
 function editNav() {
   var x = document.getElementById("myTopnav");
   if (x.className === "topnav") {
@@ -7,17 +9,15 @@ function editNav() {
     x.className = "topnav";
   }
 }
-//import { checkMail } from "./utils/mail.mjs";
+
 // DOM Elements
 const modalclose = document.querySelector(".close");
 const modalbg = document.querySelector("#modal-1");
 const modalBtn = document.querySelectorAll(".modal-btn");
 const formData = document.querySelectorAll(".formData");
-const radios = Array.from(document.getElementsByName("location"));
 const submit = document.querySelector(".btn-submit");
 const modalbg2 = document.querySelector("#modal-2");
 const form = Array.from(document.getElementsByName("reserve")[0]);
-const formLength = form.length - 2;
 
 // launch modal event
 modalBtn.forEach((btn) => btn.addEventListener("click", launchModal));
@@ -33,53 +33,38 @@ modalclose.addEventListener("click", closeModal);
 function closeModal() {
   modalbg.style.display = "none";
 }
-
+//Validation d'un courriel
 function checkMail(unMail) {
   const regEx = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  //return !regEx.test(unMail) ? false : true;
-  if (!regEx.test(unMail)) {
-    return false;
-  } else {
-    return true;
-  }
+  return !regEx.test(unMail) ? false : true;
 }
-
-//fonction pour controler le champ de formulaire
-/*function checkChamp(unChamp) {
-  switch (unChamp.type) {
-    case 'checkbox':
-      if (unChamp.checked) {
-        return true;
-      } else {
-        return false;
-      }
-      break;
-    case 'radio':
-      if (radios.find(radio => radio.checked)) {
-        return true;
-      }
-      else {
-        return false;
-      }
-      break;
-    case 'email':
-      const formMail = checkMail(unChamp.value);
-      //formMail ? true : false
-      if (formMail) {
-        return true;
-      } else {
-        return false;
-      }
-      break;
-    default:
-      if (unChamp.value) {
-        return true;
-      } else {
-        return false;
-      }
+//pour fermer la première modale en cliquant en dehors de celui-ci
+modalbg.addEventListener("click", event => {
+  if (!event.target.closest(".content")) {
+    closeModal();
   }
-}*/
-//fonction pour verifier le formulaire
+})
+//variable pour éviter de générer en boucle
+let errorDone = {
+  first: false,
+  last: false,
+  email: false,
+  birthdate: false,
+  quantity: false,
+  location: false,
+  checkbox1: false
+}
+//variable pour éviter de supprimer en boucle
+let supprErrorDone = {
+  first: false,
+  last: false,
+  email: false,
+  birthdate: false,
+  quantity: false,
+  location: false,
+  checkbox1: false
+}
+//Objet contenant tous les messages d'erreur
 const Test = {
   first: "Renseignez un prénom correct",
   last: "Renseignez un nom de famille correct",
@@ -89,83 +74,43 @@ const Test = {
   location: "Veuillez sélectionner un tournoi",
   checkbox1: "Veuillez accepter les conditions d'utilisation"
 }
-//console.log(Test);
+//Génère un message d'erreur
 function genererErrorMsg(key) {
-  const localError = document.createElement("p");
-  unControle = document.getElementsByName(`${key}`);
-  localError.innerText = Test[key];
-  localError.classList.add("errorMsg");
-  console.log(key);
-  unControle[0].parentElement.appendChild(localError);
-  //console.log(document.querySelector(".errorMsg").closest("div").contains(document.getElementsByName(`${key}`)[0]));
+  if (errorDone[key] == false) {
+    const localError = document.createElement("p");
+    unControle = document.getElementsByName(`${key}`);
+    localError.innerText = Test[key];
+    localError.classList.add("errorMsg");
+    const parent = unControle[0].parentElement;
+    parent.appendChild(localError);
+    errorDone[key] = true;
+  }
 }
-function supprErrorMsg() {
+//Supprimer message d'erreur s'il y en a
+function supprErrorMsg(key) {
   const formData = document.getElementsByClassName("formData");
+  const parent = document.getElementsByName(`${key}`)[0].parentElement;
+  const lastChild = parent.lastChild;
+  const check2 = document.getElementsByClassName("checkbox2-label");
   for (let i = 0; i < formData.length; i++) {
-    if (formData[i].contains(document.querySelector(".errorMsg"))) {
-      const element = document.querySelector(".errorMsg");
-      element.remove();
+    if (lastChild != check2[1] && lastChild != check2[0] && supprErrorDone[key] == false) {
+      lastChild.remove();
+      supprErrorDone[key] = true;
     }
   }
 }
 
-//console.log(submit.parentElement)
-/*function checkForm() {
-  let errors = 0;
-  for (let i = 0; i < formLength; i++) {
-    const controle = form[i];
-    //const error = document.querySelector("#error-" + controle.name);
-    const booleanChamp = checkChamp(controle);
-    if (!booleanChamp) {
-      const error = controle.name;
-      let msgError = "";
-      switch (controle.name) {
-        case 'first': msgError = "Renseignez un prénom";
-          break;
-        case 'last': msgError = "Renseignez un nom de famille";
-          break;
-        case 'email': msgError = "Renseignez une adresse correcte";
-          break;
-        case 'birthdate': msgError = "Renseignez une date";
-          break;
-        case 'quantity': msgError = "Renseignez une quantité";
-          break;
-        case 'location': msgError = "Veuillez sélectionner un tournoi";
-          break;
-        case 'tos': msgError = "Veuillez accepter les conditions d'utilisation";
-          break;
-      }
-
-      controle.style.borderColor = "red";
-      genererErrorMsg(msgError, controle);
-      /*error.style.display = "flex";*/
-/*errors++;
-} else {
-//error.style.display = "none";
-controle.style.borderColor = "green";
-}
-}
-if (errors != 0) {
-return false;
-} else {
-return true;
-}
-}*/
-
-//Vérification form (message si invalide)
+//Ecouteur d'évènement sur le bouton "submit"
 submit.addEventListener("click", function (event) {
   event.preventDefault();
   const formData = getFormData();
   const Validation = validationForm(formData);
-  //const value = checkForm();
-  //console.log(formData);
   if (Validation) {
     closeModal();
     modalbg2.style.display = "block";
   }
 });
-
-
+//Vérification des données
 const validationForm = (data) => {
   let errors = 0;
   for (const key in data) {
@@ -174,11 +119,11 @@ const validationForm = (data) => {
       case 'first':
         if (data[key].length >= 2) {
           input.style.borderColor = 'green';
-          supprErrorMsg();
+          supprErrorMsg(key);
         } else {
+          genererErrorMsg(key);
           errors++;
           input.style.borderColor = 'red';
-          genererErrorMsg(key);
         }
 
         break
@@ -186,7 +131,7 @@ const validationForm = (data) => {
 
         if (data[key].length >= 2) {
           input.style.borderColor = 'green';
-          supprErrorMsg();
+          supprErrorMsg(key);
         } else {
           errors++;
           input.style.borderColor = 'red';
@@ -197,14 +142,13 @@ const validationForm = (data) => {
       case 'email':
 
         if (!checkMail(data[key])) {
-          //console.log(checkMail(data[key]));
           errors++;
           genererErrorMsg(key);
           input.style.borderColor = 'red';
 
         } else {
           input.style.borderColor = 'green';
-          supprErrorMsg();
+          supprErrorMsg(key);
         }
 
         break
@@ -216,7 +160,7 @@ const validationForm = (data) => {
           genererErrorMsg(key);
         } else {
           input.style.borderColor = 'green';
-          supprErrorMsg();
+          supprErrorMsg(key);
         }
 
         break
@@ -228,7 +172,7 @@ const validationForm = (data) => {
           genererErrorMsg(key);
         } else {
           input.style.borderColor = 'green';
-          supprErrorMsg();
+          supprErrorMsg(key);
         }
 
         break
@@ -237,10 +181,8 @@ const validationForm = (data) => {
         if (data[key] == "on" || data[key] == null) {
           errors++;
           genererErrorMsg(key);
-          //input.style.borderColor = 'red';
         } else {
-          supprErrorMsg();
-          //input.style.borderColor = 'green';
+          supprErrorMsg(key);
         }
 
         break
@@ -248,10 +190,9 @@ const validationForm = (data) => {
         if (data[key] == false) {
           errors++;
           genererErrorMsg(key);
-          //input.style.borderColor = 'red';
+          console.log(data[key]);
         } else {
-          supprErrorMsg();
-          //input.style.borderColor = 'green';
+          supprErrorMsg(key);
         }
 
         break
@@ -263,6 +204,7 @@ const validationForm = (data) => {
   }
   return errors != 0 ? false : true;
 }
+// Récupération des données des champs du formulaire
 function getFormData() {
   return {
     first: document.querySelector('#first').value,
